@@ -10,10 +10,7 @@ const { buildSlackAttachments, formatChannelName } = require('./src/utils');
     const color = core.getInput('color');
     const messageId = core.getInput('message_id');
     const text = core.getInput('text');
-    const count = process.getInput('count');
-    const success = core.getInput('success');
-    const failed = process.getInput('failed');
-    const firstFiveFailures = core.getInput('firstFive');
+    const { count, success, failed, firstFive } = JSON.parse(core.getInput('report'));
 
     const token = process.env.SLACK_BOT_TOKEN;
     const slack = new WebClient(token);
@@ -23,7 +20,7 @@ const { buildSlackAttachments, formatChannelName } = require('./src/utils');
       return;
     }
 
-    const attachments = buildSlackAttachments({ status, color, github, count, success, failed, firstFiveFailures });
+    const attachments = buildSlackAttachments({ status, color, github, count, success, failed, firstFive });
     const channelId = core.getInput('channel_id') || (await lookUpChannelId({ slack, channel }));
 
     if (!channelId) {

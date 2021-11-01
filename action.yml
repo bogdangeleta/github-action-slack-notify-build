@@ -15,14 +15,16 @@ inputs:
     required: true
   color:
     description: 'The color of the Slack attachment.'
-    required: true
-    default: '#cccccc'
+    required: false
   message_id:
     description: 'The ID of the existing Slack message to update.'
     required: false
   text:
     description: 'The text of Slack message'
     required: false
+  report:
+    description: 'The JSON string with info about failed reports'
+    required: true
 outputs:
   message_id:
     description: 'The unique timestamp identifier of the Slack message sent'

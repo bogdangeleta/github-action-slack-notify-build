@@ -18238,13 +18238,17 @@ function wrappy (fn, cb) {
 
 const { context } = __nccwpck_require__(6366);
 
-function buildSlackAttachments({ status, color, github }) {
+function buildSlackAttachments({ status, color, github, count, success, failed, firstFive }) {
   const { payload, ref, workflow, eventName } = github.context;
   const { owner, repo } = context.repo;
   const event = eventName;
   const branch = event === 'pull_request' ? payload.pull_request.head.ref : ref.replace('refs/heads/', '');
 
   const sha = event === 'pull_request' ? payload.pull_request.head.sha : github.context.sha;
+
+  if (!color) {
+    color = failed === 0 ? 'good' : 'danger';
+  }
 
   const referenceLink =
     event === 'pull_request'
@@ -18259,27 +18263,61 @@ function buildSlackAttachments({ status, color, github }) {
           short: true,
         };
 
+  let fields = [
+    {
+      title: 'Action',
+      value: `<https://github.com/${owner}/${repo}/commit/${sha}/checks | ${workflow}>`,
+      short: true,
+    },
+    {
+      title: 'Status',
+      value: status,
+      short: true,
+    },
+    referenceLink,
+    {
+      title: 'Event',
+      value: event,
+      short: true,
+    },
+  ];
+
+  if (count) {
+    fields.push({
+      title: 'Count',
+      value: count,
+      short: true,
+    });
+  }
+
+  if (success) {
+    fields.push({
+      title: 'Success',
+      value: success,
+      short: true,
+    });
+  }
+
+  if (failed) {
+    fields.push({
+      title: 'Failed',
+      value: failed,
+      short: true,
+    });
+  }
+
+  if (firstFive && firstFive.length > 0) {
+    fields.push({
+      title: 'First five failures',
+      value: firstFive.join('\n'),
+      short: true,
+    });
+  }
+
   return [
     {
       color,
-      fields: [
-        {
-          title: 'Action',
-          value: `<https://github.com/${owner}/${repo}/commit/${sha}/checks | ${workflow}>`,
-          short: true,
-        },
-        {
-          title: 'Status',
-          value: status,
-          short: true,
-        },
-        referenceLink,
-        {
-          title: 'Event',
-          value: event,
-          short: true,
-        },
-      ],
+      fields: fields,
       footer_icon: 'https://github.githubassets.com/favicon.ico',
       footer: `<https://github.com/${owner}/${repo} | ${owner}/${repo}>`,
       ts: Math.floor(Date.now() / 1000),
@@ -18471,6 +18509,8 @@ const { buildSlackAttachments, formatChannelName } = __nccwpck_require__(4727);
     const color = core.getInput('color');
     const messageId = core.getInput('message_id');
     const text = core.getInput('text');
+    const { count, success, failed, firstFive } = JSON.parse(core.getInput('report'));
+
     const token = process.env.SLACK_BOT_TOKEN;
     const slack = new WebClient(token);
 
@@ -18479,7 +18519,7 @@ const { buildSlackAttachments, formatChannelName } = __nccwpck_require__(4727);
       return;
     }
 
-    const attachments = buildSlackAttachments({ status, color, github });
+    const attachments = buildSlackAttachments({ status, color, github, count, success, failed, firstFive });
     const channelId = core.getInput('channel_id') || (await lookUpChannelId({ slack, channel }));
 
     if (!channelId) {

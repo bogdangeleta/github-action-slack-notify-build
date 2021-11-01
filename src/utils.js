@@ -1,12 +1,20 @@
 const { context } = require('@actions/github');
 
-function buildSlackAttachments({ status, color, github, count, success, failed, firstFiveFailures }) {
+function buildSlackAttachments({ status, color, github, count, success, failed, firstFive }) {
   const { payload, ref, workflow, eventName } = github.context;
   const { owner, repo } = context.repo;
   const event = eventName;
   const branch = event === 'pull_request' ? payload.pull_request.head.ref : ref.replace('refs/heads/', '');
 
   const sha = event === 'pull_request' ? payload.pull_request.head.sha : github.context.sha;
+
+  if (!color) {
+    color = failed === 0 ? 'good' : 'danger';
+  }
+
+  if (!status) {
+    status = failed === 0 ? 'SUCCESS' : 'FAILED';
+  }
 
   const referenceLink =
     event === 'pull_request'
@@ -64,10 +72,10 @@ function buildSlackAttachments({ status, color, github, count, success, failed, 
     });
   }
 
-  if (firstFiveFailures) {
+  if (firstFive && firstFive.length > 0) {
     fields.push({
       title: 'First five failures',
-      value: firstFiveFailures,
+      value: firstFive.join('\n'),
       short: true,
     });
   }
