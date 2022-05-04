@@ -18227,29 +18227,33 @@ function buildSlackAttachments({ status, color, github, count, success, failed, 
   if (firstFive && firstFive.length > 0) {
     msg = [
       `${getAlertSymbol()} ${bold(`Diner ${platform} variants audit found issues`)} ${getAlertSymbol()}\n\n`,
-      firstFive.map((variant) => {
-        const explanation = [
-          '┌──────────────────────────────────────',
-          `${getExclamationSymbol()} ${bold(variant.key)} owned by ${bold(`${getTeamLink(variant.team)}`)}`,
-          `     "${italic(variant.name)}"\n`,
-          `   •   ${variant.message}`,
-          '└──────────────────────────────────────'
-        ];
-        return explanation.join('\n');
-      }).join('\n')
-    ].join('\n')
+      firstFive
+        .map(variant => {
+          const explanation = [
+            '┌──────────────────────────────────────',
+            `${getExclamationSymbol()} ${bold(variant.key)} owned by ${bold(`${getTeamLink(variant.team)}`)}`,
+            `     "${italic(variant.name)}"\n`,
+            `   •   ${variant.message}`,
+            '└──────────────────────────────────────',
+          ];
+          return explanation.join('\n');
+        })
+        .join('\n'),
+    ].join('\n');
   } else {
-    msg = `${getCheckmarkSymbol()} ${bold(`Diner ${platform} variants audit is complete and no issues were found. There are ${count} variables total.`)}`
+    msg = `${getCheckmarkSymbol()} ${bold(
+      `Diner ${platform} variants audit is complete and no issues were found. There are ${count} variables total.`
+    )}`;
   }
 
   return [
     {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": msg
-      }
-    }
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: msg,
+      },
+    },
   ];
 }
 // function buildSlackAttachments({ status, color, github, count, success, failed, firstFive }) {
@@ -18260,9 +18264,9 @@ function buildSlackAttachments({ status, color, github, count, success, failed, 
 
 //   const sha = event === 'pull_request' ? payload.pull_request.head.sha : github.context.sha;
 
-  // if (!color) {
-  //   color = failed === 0 ? 'good' : 'danger';
-  // }
+// if (!color) {
+//   color = failed === 0 ? 'good' : 'danger';
+// }
 
 //   if (!status) {
 //     status = failed === 0 ? 'SUCCESS' : 'FAILED';
@@ -18605,7 +18609,7 @@ const { buildSlackAttachments, formatChannelName } = __nccwpck_require__(8494);
       args.ts = messageId;
     }
 
-    args.text = "Something went wrong...";
+    args.text = 'Something went wrong...';
 
     const response = await slack.chat[apiMethod](args);
 

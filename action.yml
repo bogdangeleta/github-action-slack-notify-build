@@ -25,6 +25,9 @@ inputs:
   report:
     description: 'The JSON string with info about failed reports'
     required: true
+  platform:
+    description: 'A platform string to add to title'
+    required: false
 outputs:
   message_id:
     description: 'The unique timestamp identifier of the Slack message sent'
