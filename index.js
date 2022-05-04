@@ -11,6 +11,7 @@ const { buildSlackAttachments, formatChannelName } = require('./src/utils');
     const messageId = core.getInput('message_id');
     const text = core.getInput('text');
     const { count, success, failed, firstFive } = JSON.parse(core.getInput('report'));
+    const platform = core.getInput('platform');
 
     const token = process.env.SLACK_BOT_TOKEN;
     const slack = new WebClient(token);
@@ -20,7 +21,7 @@ const { buildSlackAttachments, formatChannelName } = require('./src/utils');
       return;
     }
 
-    const attachments = buildSlackAttachments({ status, color, github, count, success, failed, firstFive });
+    const blocks = buildSlackAttachments({ status, color, github, count, success, failed, firstFive, platform });
     const channelId = core.getInput('channel_id') || (await lookUpChannelId({ slack, channel }));
 
     if (!channelId) {
@@ -32,16 +33,14 @@ const { buildSlackAttachments, formatChannelName } = require('./src/utils');
 
     const args = {
       channel: channelId,
-      attachments,
+      blocks,
     };
 
     if (messageId) {
       args.ts = messageId;
     }
 
-    if (text) {
-      args.text = text;
-    }
+    args.text = 'Something went wrong...';
 
     const response = await slack.chat[apiMethod](args);
 
